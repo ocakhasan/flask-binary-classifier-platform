@@ -1,0 +1,36 @@
+<!doctype html>
+<title>Binary Image Classifier</title>
+<h2>Select a file or files to upload. After upload press train button to train the model. After training press the predict button to predict</h2>
+<p>
+	{% with messages = get_flashed_messages() %}
+	{% if messages %}
+	Label: {{ messages[0] }}
+	{% endif %}
+	{% endwith %}
+</p>
+<form method="post" enctype="multipart/form-data" action="/">
+	<dl>
+		<p>
+			<input type="file" name="file" autocomplete="off" required multiple>
+		</p>
+	</dl>
+
+	<p>
+		<input type="submit" value="Add to First Class" name="data1">
+	</p>
+
+	<p>
+		<input type="submit" value="Add to Second Class" name="data2">
+	</p>
+
+	<p>
+		<input type="submit" value="Predict" name="predict">
+	</p>
+
+</form>
+
+<form method="post" enctype="multipart/form-data" action="/train">
+	<p>
+		<input type="submit" value="Train Model" name="train">
+	</p>
+</form>
