@@ -1,5 +1,5 @@
-from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten
-from keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten
+from tensorflow.keras.models import Sequential
 
 
 def get_model():

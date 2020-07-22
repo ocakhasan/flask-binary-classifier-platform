@@ -5,8 +5,9 @@ from werkzeug.utils import secure_filename
 import os
 import tensorflow as tf
 import numpy as np
-from keras.preprocessing.image import load_img, img_to_array
-from keras.applications.vgg16 import preprocess_input
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.applications.vgg16 import preprocess_input
+from tensorflow.compat.v1.keras.backend import set_session
 
 X = []
 y = []
@@ -18,11 +19,15 @@ app = Flask(__name__)
 app.secret_key = "secret key"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-model = get_model()
 
 global graph
-graph = tf.get_default_graph()
+global session
+graph = tf.compat.v1.get_default_graph()
+session = tf.compat.v1.Session()
 
+with session.as_default():
+    with graph.as_default():
+        model = get_model()
 
 def add_data(filename, label):
     image = load_img('uploads/'+filename, target_size=(150, 150))
@@ -43,8 +48,9 @@ def getPrediction(model, filename):
     image = img_to_array(image)
     image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
     image = preprocess_input(image)
-    with graph.as_default():
-        yhat = model.predict(image)
+    with session.as_default():
+        with graph.as_default():
+            yhat = model.predict(image)
 
     if yhat < 0.5:
         return 0
@@ -97,15 +103,17 @@ def submit_file():
             return redirect('/')
 
 
+
 @app.route('/train', methods=['POST'])
 def train():
-    with graph.as_default():
-        handle_data(X)
-        model.compile(optimizer='adam',
-                      loss=tf.keras.losses.BinaryCrossentropy(),
-                      metrics=['accuracy'])
-        model.fit(np.array(X), np.array(y), nb_epoch=5, batch_size=1)
-        return redirect('/')
+    with session.as_default():
+        with graph.as_default():
+            handle_data(X)
+            model.compile(optimizer='adam',
+                        loss=tf.keras.losses.BinaryCrossentropy(),
+                        metrics=['accuracy'])
+            model.fit(np.array(X), np.array(y), epochs=5, batch_size=1 )
+            return redirect('/')
 
 
 if __name__ == "__main__":
